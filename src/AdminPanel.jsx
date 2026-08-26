@@ -909,6 +909,19 @@ const reportsByUser = useMemo(() => {
                       {!u.approved && (
                         <button onClick={() => handleApproveUser(u.id)} className="bg-green-600 px-3 py-1 rounded">Jóváhagy</button>
                       )}
+                      <button
+                        onClick={() => handleToggleAdmin(u.id, u.role === "admin")}
+                        disabled={u.id === currentUser?.uid}
+                        className={`px-3 py-1 rounded text-sm ${
+                          u.id === currentUser?.uid
+                            ? "bg-gray-600 text-gray-300 cursor-not-allowed"
+                            : u.role === "admin"
+                            ? "bg-indigo-600 hover:bg-indigo-700"
+                            : "bg-blue-600 hover:bg-blue-700"
+                        }`}
+                      >
+                        {u.role === "admin" ? "Admin elvétele" : "Admin adása"}
+                      </button>
                       <button onClick={() => handleToggleSuspendUser(u.id, !!u.suspended)} className={`px-3 py-1 rounded ${u.suspended ? "bg-indigo-600" : "bg-yellow-600"}`}>
                         {u.suspended ? "Visszaállít" : "Felfüggeszt"}
                       </button>
@@ -1436,6 +1449,36 @@ async function handleAssignRank(uid, rank) {
   } catch (err) {
     console.error("❌ Hiba a rang frissítésénél:", err);
     alert("Hiba a rang frissítésénél: " + err.message);
+  }
+}
+
+async function handleToggleAdmin(uid, currentlyAdmin) {
+  const auth = getAuth();
+
+  if (uid === auth.currentUser?.uid) {
+    alert("A saját admin jogosultságodat nem veheted el.");
+    return;
+  }
+
+  const nextRole = currentlyAdmin ? "user" : "admin";
+  const action = currentlyAdmin ? "elveszed" : "adminná teszed";
+  if (!window.confirm(`Biztosan ${action} ezt a felhasználót?`)) return;
+
+  try {
+    await updateDoc(doc(db, "users", uid), { role: nextRole });
+    await addDoc(collection(db, "notifications"), {
+      target: uid,
+      title: currentlyAdmin ? "Admin jogosultság visszavonva" : "Admin jogosultság megadva",
+      body: currentlyAdmin
+        ? "Az admin jogosultságodat visszavonták."
+        : "Admin jogosultságot kaptál.",
+      createdAt: serverTimestamp(),
+      readBy: [],
+    });
+    alert(currentlyAdmin ? "Admin jogosultság visszavonva." : "Admin jogosultság megadva.");
+  } catch (err) {
+    console.error("Hiba az admin jogosultság frissítésénél:", err);
+    alert("Hiba az admin jogosultság frissítésénél: " + (err.message || err));
   }
 }
 
