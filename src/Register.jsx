@@ -163,7 +163,7 @@ const Register = () => {
         "
       >
         <h2 className="text-2xl font-bold text-orange-300 text-center mb-6">
-          Felhasználói regisztráció
+          regisztráció
         </h2>
 
         {error && (
