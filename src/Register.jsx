@@ -172,7 +172,7 @@ const Register = () => {
 
         <input
           type="text"
-          placeholder="Teljes név"
+          placeholder="Teljes név [IG]"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           className="w-full p-3 mb-3 rounded-lg bg-black/40 border border-orange-500/20 focus:ring-2 focus:ring-orange-500/30 outline-none"
