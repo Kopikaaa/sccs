@@ -23,6 +23,18 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!window.location.hash.startsWith("#/")) return;
+
+    const basePath = window.location.pathname.endsWith("/")
+      ? window.location.pathname
+      : window.location.pathname.slice(0, window.location.pathname.lastIndexOf("/") + 1);
+
+    if (window.location.pathname !== basePath) {
+      window.history.replaceState(null, "", `${basePath}${window.location.hash}`);
+    }
+  }, []);
+
+  useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setLoading(true);
