@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { auth, db } from "./firebase";
 import { onAuthStateChanged, reload } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./Login";
 import Register from "./Register";
@@ -65,8 +65,6 @@ export default function App() {
   return (
     <Router>
       <Routes>
-
-
         {user && suspended ? (
           <>
             <Route path="/suspended" element={<Suspended />} />
@@ -93,7 +91,6 @@ export default function App() {
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </>
         )}
-
       </Routes>
     </Router>
   );
