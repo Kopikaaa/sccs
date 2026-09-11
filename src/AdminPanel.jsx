@@ -346,11 +346,16 @@ export default function AdminPanel() {
         quest: 0,
         fines: 0,
         amountTotal: 0,
+        towing: 0,
       };
     }
 
     const type = (r.reportType || "").toLowerCase();
     const fine = Number(r.fineAmount || 0);
+
+    if (r.towing) {
+      perUser[key].towing += 1;
+    }
 
     if (type === "quest") {
       perUser[key].quest += 1;
@@ -386,6 +391,7 @@ export default function AdminPanel() {
       quest: v.quest,
       fines: v.fines,
       amountTotal: v.amountTotal,
+      towing: v.towing,
       normalSum,
       total,
     };
@@ -443,6 +449,7 @@ reports: reportsData.map((r) => ({
   reportType: r.reportType || "alap",
   vehicleName: r.vehicleName || r.vehicleType || null,
   amount: Number(r.amount || 0),
+  towing: !!r.towing,
   imageUrl: r.imageUrl || null,
   createdAt: r.createdAt || null,
 }))
@@ -628,11 +635,12 @@ const reportsByUser = useMemo(() => {
 
   return (
     <div
-  className="min-h-screen text-[#ffddb0] pt-28"
+  className="min-h-screen text-[#ffddb0] pt-28 bg-fixed"
   style={{
     backgroundImage: "url('/background.webp')",
     backgroundSize: "cover",
     backgroundPosition: "center",
+    backgroundAttachment: "fixed",
   }}
 >
 
@@ -769,24 +777,24 @@ const reportsByUser = useMemo(() => {
               .map((r) => (
                 <div
                   key={r.id}
-                  className="bg-[#111827]/80 border border-white/10 rounded-xl p-4"
+                  className="bg-[#111827]/80 border border-white/10 rounded-xl p-4 flex flex-col"
                 >
-                  {(r.reportType || "").toLowerCase() === "quest" ? (
-                    <span className="inline-block mb-2 px-2 py-1 text-xs rounded bg-violet-600/20 text-violet-400">
-                      QUEST
-                    </span>
-                  ) : (
-                    <span className="inline-block mb-2 px-2 py-1 text-xs rounded bg-orange-600/20 text-orange-400">
-                      {(reportTypeLabels[r.reportType] || "Alap").toUpperCase()}
-                    </span>
-                  )}
-
-                  <button
-                    onClick={() => handleDeleteReport(r.id)}
-                    className="mt-2 w-full bg-red-600 hover:bg-red-700 text-white py-1.5 rounded-lg text-sm"
-                  >
-                    Törlés
-                  </button>
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    {(r.reportType || "").toLowerCase() === "quest" ? (
+                      <span className="inline-block px-2 py-1 text-xs rounded bg-violet-600/20 text-violet-400">
+                        QUEST
+                      </span>
+                    ) : (
+                      <span className="inline-block px-2 py-1 text-xs rounded bg-orange-600/20 text-orange-400">
+                        {(reportTypeLabels[r.reportType] || "Alap").toUpperCase()}
+                      </span>
+                    )}
+                    {r.towing && (
+                      <span className="inline-block px-2 py-1 text-xs rounded bg-sky-600/20 text-sky-300">
+                        VONTATÁS
+                      </span>
+                    )}
+                  </div>
 
                   {(r.images?.[0] || r.imageUrl) && (
                     <img
@@ -795,7 +803,7 @@ const reportsByUser = useMemo(() => {
                       onClick={() =>
                         setPreviewImage(r.images?.[0] || r.imageUrl)
                       }
-                      className="w-full h-40 object-cover rounded-lg my-3 cursor-pointer hover:opacity-90"
+                      className="w-full h-40 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-90"
                     />
                   )}
 
@@ -811,6 +819,13 @@ const reportsByUser = useMemo(() => {
                       ? r.createdAt.toDate().toLocaleString("hu-HU")
                       : "N/A"}
                   </p>
+
+                  <button
+                    onClick={() => handleDeleteReport(r.id)}
+                    className="mt-3 w-full bg-red-600 hover:bg-red-700 text-white py-1.5 rounded-lg text-sm"
+                  >
+                    Törlés
+                  </button>
                 </div>
               ))}
           </div>
@@ -836,7 +851,7 @@ const reportsByUser = useMemo(() => {
               createdAt: serverTimestamp(),
               used: false,
             });
-            const inviteUrl = `${window.location.origin}/register?invite=${token}`;
+            const inviteUrl = `${window.location.origin}/#/register?invite=${token}`;
             await navigator.clipboard.writeText(inviteUrl);
             alert(`Új meghívó link másolva a vágólapra:\n${inviteUrl}`);
           } catch (err) {
@@ -1020,6 +1035,11 @@ const reportsByUser = useMemo(() => {
 
                 <td className="p-3 font-semibold text-[#ffb870]">
                   {u.name}
+                  {u.towing > 0 && (
+                    <span className="ml-1 text-[10px] font-normal text-sky-300/40">
+                      (vont.: {u.towing})
+                    </span>
+                  )}
                 </td>
 
                 <td className="p-3">
@@ -1259,6 +1279,10 @@ if (!acc[name]) {
             <p className="text-[#c9d1d9] text-sm">Jármű: {r.vehicleName || r.vehicleType}</p>
           )}
 
+          {r.towing && (
+            <p className="text-sky-300 text-sm">Vontatás</p>
+          )}
+
           <p className="text-xs text-gray-500 mt-1">
             {r.createdAt?.toDate
               ? r.createdAt.toDate().toLocaleString("hu-HU", {
@@ -1381,7 +1405,7 @@ function InviteLinksTable() {
                 {!inv.used && (
                   <button
                     onClick={() => {
-                      const url = `${window.location.origin}/register?invite=${inv.token}`;
+                      const url = `${window.location.origin}/#/register?invite=${inv.token}`;
                       navigator.clipboard.writeText(url);
                       alert("Link vágólapra másolva:\n" + url);
                     }}
