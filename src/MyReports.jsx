@@ -184,6 +184,11 @@ export default function MyReports() {
       </div>
                         </>
                       )}
+                      {r.towing && (
+                        <p className="inline-block mt-1 px-2 py-0.5 text-xs rounded bg-sky-600/20 text-sky-300 w-fit">
+                          Vontatás
+                        </p>
+                      )}
 
                       <p className="opacity-60 text-xs mt-1">{dateText}</p>
                     </div>
