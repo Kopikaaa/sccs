@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [reports, setReports] = useState([]);
+  const [towing, setTowing] = useState(false);
   const [role, setRole] = useState("user");
   const [profile, setProfile] = useState(null);
   const [topUsers, setTopUsers] = useState([]);
@@ -204,6 +205,7 @@ await addDoc(collection(db, "reports"), {
     auth.currentUser?.displayName ||
     auth.currentUser?.email,
   userRank: profile?.rank || null,
+  towing,
   createdAt: serverTimestamp(),
 });
 
@@ -216,6 +218,7 @@ await addDoc(collection(db, "reports"), {
     setReportType("alap");
     setVehicleName("");
     setImageFile(null);
+    setTowing(false);
 
     imageUploadRef.current?.reset();
 
@@ -248,11 +251,12 @@ await addDoc(collection(db, "reports"), {
   return (
 <div
 
-  className="min-h-screen text-white pt-28 bg-cover bg-center"
+  className="min-h-screen text-white pt-28 bg-cover bg-center bg-fixed"
   style={{
     backgroundImage: "url('/background.webp')",
     backgroundSize: "cover",
     backgroundPosition: "center",
+    backgroundAttachment: "fixed",
   }}
 >
 
@@ -276,8 +280,7 @@ await addDoc(collection(db, "reports"), {
                 </li>
               </ul>
               <p className="text-xs opacity-60 mt-3">
-                Ha hibát találsz, írj Discordon privátban vagy a hibajelentő
-                csatornában.
+                Ha hibát találsz, írj Discordon.
               </p>
             </aside>
 
@@ -346,6 +349,19 @@ className="lg:col-span-2 relative rounded-2xl p-6 border border-orange-500/20 bg
   <div className="md:col-span-2">
     <label className="block mb-1 text-[#ffb870]">Jármű neve</label>
     <VehicleSelector value={vehicleName} onChange={setVehicleName} />
+  </div>
+
+  <div className="md:col-span-2 flex items-center gap-2">
+    <input
+      type="checkbox"
+      id="towing"
+      checked={towing}
+      onChange={(e) => setTowing(e.target.checked)}
+      className="w-4 h-4 accent-orange-500"
+    />
+    <label htmlFor="towing" className="text-[#ffb870] cursor-pointer">
+      Vontatás
+    </label>
   </div>
 
 {reportType !== "quest" && (
@@ -482,6 +498,11 @@ className="lg:col-span-2 relative rounded-2xl p-6 border border-orange-500/20 bg
         Összeg: {r.amount?.toLocaleString("hu-HU")} $
       </div>
     </>
+  )}
+  {r.towing && (
+    <div className="inline-block mt-1 px-2 py-0.5 text-xs rounded bg-sky-600/20 text-sky-300">
+      Vontatás
+    </div>
   )}
 
   <div className="text-xs opacity-50 mt-2">
